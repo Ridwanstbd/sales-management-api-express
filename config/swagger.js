@@ -46,7 +46,7 @@ const options = {
 const swaggerSpec = swaggerJsdoc(options);
 
 const restrictAccess = (req, res, next) => {
-    const allowedIPs = ['127.0.0.1::1'];
+    const allowedIPs = ['::1'];
     const clientIP = req.ip;
 
     if (allowedIPs.includes(clientIP)) {
