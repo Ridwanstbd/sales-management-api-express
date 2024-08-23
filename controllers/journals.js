@@ -33,7 +33,7 @@ exports.createJournal = async (data, details) => {
         const query = await db.query('INSERT INTO journal_entries SET ?', [data])
         if (!query.affectedRows) return { message: "Terjadi Kesalahan saat membuat Journal Entry!" }
 
-        const journalId = query[0].insertId
+        const journalId = query.insertId
         for (const detail of details) {
             detail.journal_entry_id = journalId
             await db.query('INSERT INTO journal_details SET ?', [detail])
