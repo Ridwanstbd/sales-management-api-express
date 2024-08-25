@@ -80,7 +80,8 @@ accounts.post('/', [
     body('account_code').notEmpty().withMessage('Account code dibutuhkan!'),
     body('account_name').notEmpty().withMessage('Account name dibutuhkan!'),
     body('account_type_id').isInt().withMessage('Account type ID harus Ada!'),
-    body('account_balance').isNumeric().withMessage('Account balance harus numerik')
+    body('initial_debit_balance').isNumeric().withMessage('Account balance harus numerik'),
+    body('initial_credit_balance').isNumeric().withMessage('Account balance harus numerik')
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

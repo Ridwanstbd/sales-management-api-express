@@ -8,6 +8,7 @@ const port = 3000
 const accounts = require('./routers/accounts')
 const journals = require('./routers/journals')
 const accountTypes = require('./routers/account-type')
+const reports = require('./routers/reports')
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -18,6 +19,7 @@ app.get('/', (req, res) => {
 app.use('/accounts', accounts)
 app.use('/journals', journals)
 app.use('/account-types', accountTypes)
+app.use('/reports', reports)
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })

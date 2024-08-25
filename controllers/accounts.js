@@ -26,8 +26,8 @@ exports.accountMovement = async (accountId) => {
     try {
         const [accountResult] = await db.query(`
             SELECT a.*, ay.normal_balance FROM accounts a JOIN account_types ay ON a.account_type_id = ay.id WHERE a.id = ?
-        `, [accountId]);
-        const account = accountResult;
+        `, [accountId])
+        const account = accountResult
 
         const queryResults = await db.query(`
             SELECT je.id, je.date, je.description, jd.id AS journal_detail_id, jd.account_id, jd.debit, jd.credit FROM journal_entries je INNER JOIN journal_details jd ON je.id = jd.journal_entry_id WHERE jd.account_id = ?
@@ -53,14 +53,14 @@ exports.accountMovement = async (accountId) => {
             code: account.account_code,
             name: account.account_name,
             account_type_id: account.account_type_id,
-            account_balance: account.account_balance,
+            initial_debit_balance: account.initial_debit_balance,
+            initial_credit_balance: account.initial_credit_balance,
             normal_balance: account.normal_balance,
             details: details
         };
 
         return accountMovement
     } catch (error) {
-        console.log(error);
         return { message: 'Terjadi kesalahan saat mengambil data pergerakan akun!', error };
     }
 };

@@ -1,14 +1,14 @@
 const express = require('express')
 const reports = express.Router()
-const { body, param, validationResult } = require('express-validator')
-const { getJournalProfitAndLoss, getBalanceSheet } = require('../controllers/reports')
+const { getFinalBalance, getReport } = require('../controllers/reports')
 
-reports.get('/profit-loss/:accountCode', async (req, res) => {
-    const { accountCode } = req.params
-    res.send(await getJournalProfitAndLoss(accountCode))
+reports.get('/:accountId', async (req, res) => {
+    const { accountId } = req.params
+    res.send(await getReport(accountId))
 })
-reports.get('/balance-sheet/:accountCode', async (req, res) => {
-    const { accountCode } = req.params
-    res.send(await getBalanceSheet(accountCode))
+reports.get('/final-balance/:accountId', async (req, res) => {
+    const { accountId } = req.params
+    res.send(await getFinalBalance(accountId))
 })
+
 module.exports = reports
