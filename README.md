@@ -31,13 +31,8 @@
 
 3. **Konfigurasi lingkungan**:
     Buat file `.env` di root proyek dan tambahkan variabel lingkungan yang diperlukan.
-
-    Konfigurasi Database Mysql
-    Anda dapat import dari `.sales_management.sql`
-
     Contoh konfigurasi `.env`:
     ```
-    PORT=3000
     DB_HOSTNAME = localhost
     DB_USERNAME = root
     DB_PASSWORD = 
@@ -45,7 +40,11 @@
     JWT_SECRET=your_jwt_secret
     ```
 
-4. **Jalankan aplikasi**:
+4. **Konfigurasi Database Mysql**:
+    Buat database di server MySQL anda dengan nama sales_management
+    Import file `sales_management.sql` kedalam database anda
+    
+5. **Jalankan aplikasi**:
     ```bash
     npm run dev
     ```
