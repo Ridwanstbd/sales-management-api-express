@@ -107,6 +107,10 @@ exports.getLedger = async (accountId) => {
     return result
 }
 exports.getProfitLoss = async (startDate, endDate) => {
+    if (new Date(endDate) <= new Date(startDate)) {
+        throw new Error("Tanggal akhir harus lebih besar dari tanggal awal");
+    }
+
     const pendapatan = await db.query(`
         SELECT 
             a.account_code, 
@@ -129,7 +133,7 @@ exports.getProfitLoss = async (startDate, endDate) => {
     );
 
     const totalPendapatan = {
-        "details": pendapatan.map(detail => ({
+        "detail": pendapatan.map(detail => ({
             "account_name": detail.account_name,
             "account_code": detail.account_code,
             "balance": detail.saldo,
@@ -159,7 +163,7 @@ exports.getProfitLoss = async (startDate, endDate) => {
     );
 
     const totalBiayaAtasPendapatan = {
-        "details": biayaAtasPendapatan.map(detail => ({
+        "detail": biayaAtasPendapatan.map(detail => ({
             "account_name": detail.account_name,
             "account_code": detail.account_code,
             "balance": detail.saldo,
@@ -189,7 +193,7 @@ exports.getProfitLoss = async (startDate, endDate) => {
     );
 
     const totalBiaya = {
-        "details": biaya.map(detail => ({
+        "detail": biaya.map(detail => ({
             "account_name": detail.account_name,
             "account_code": detail.account_code,
             "balance": detail.saldo,
@@ -219,7 +223,7 @@ exports.getProfitLoss = async (startDate, endDate) => {
     );
 
     const totalPendapatanLainnya = {
-        "details": pendapatanLainnya.map(detail => ({
+        "detail": pendapatanLainnya.map(detail => ({
             "account_name": detail.account_name,
             "account_code": detail.account_code,
             "balance": detail.saldo,
@@ -249,7 +253,7 @@ exports.getProfitLoss = async (startDate, endDate) => {
     );
 
     const totalBebanBiayaLainnya = {
-        "details": bebanBiayaLainnya.map(detail => ({
+        "detail": bebanBiayaLainnya.map(detail => ({
             "account_name": detail.account_name,
             "account_code": detail.account_code,
             "balance": detail.saldo,

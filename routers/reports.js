@@ -16,7 +16,12 @@ reports.get('/buku-besar/:accountId', async (req, res) => {
 })
 reports.get('/laba-rugi/:startDate/:endDate', async (req, res) => {
     const { startDate, endDate } = req.params
-    res.send(await getProfitLoss(startDate, endDate))
+    try {
+        const result = await getProfitLoss(startDate, endDate);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 })
 
 module.exports = reports
