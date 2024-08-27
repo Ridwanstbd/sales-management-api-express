@@ -280,3 +280,167 @@ exports.getProfitLoss = async (startDate, endDate) => {
     };
     return result;
 }
+exports.getBalanceSheet = async (startDate, endDate) => {
+    const asetLancar = await db.query(`
+SELECT 
+    a.account_code,
+    a.account_name,
+    COALESCE(SUM(IF(je.date < ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_awal,
+    COALESCE(SUM(IF(je.date BETWEEN ? AND ?, jd.debit - jd.credit, 0)), 0) AS periode_berjalan,
+    COALESCE(SUM(IF(je.date <= ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_akhir
+FROM 
+    accounts a
+LEFT JOIN 
+    journal_details jd ON a.id = jd.account_id
+LEFT JOIN 
+    journal_entries je ON jd.journal_entry_id = je.id
+WHERE 
+    a.account_type_id IN (
+        SELECT id FROM account_types WHERE name IN ('Kas', 'Bank', 'Akun Piutang', 'Persediaan', 'Aktiva Lancar Lainnya')
+    )
+GROUP BY 
+    a.account_code, a.account_name
+ORDER BY 
+    a.account_code;
+    `, [startDate, startDate, endDate, endDate]);
+
+    const asetTetap = await db.query(`
+SELECT 
+    a.account_code,
+    a.account_name,
+    COALESCE(SUM(IF(je.date < ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_awal,
+    COALESCE(SUM(IF(je.date BETWEEN ? AND ?, jd.debit - jd.credit, 0)), 0) AS periode_berjalan,
+    COALESCE(SUM(IF(je.date <= ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_akhir
+FROM 
+    accounts a
+LEFT JOIN 
+    journal_details jd ON a.id = jd.account_id
+LEFT JOIN 
+    journal_entries je ON jd.journal_entry_id = je.id
+WHERE 
+    a.account_type_id IN (
+        SELECT id FROM account_types WHERE name IN ('Aktiva Tetap', 'Akumulasi Penyusutan')
+    )
+GROUP BY 
+    a.account_code, a.account_name
+ORDER BY 
+    a.account_code;
+    `, [startDate, startDate, endDate, endDate]);
+
+    const asetLainnya = await db.query(`
+SELECT 
+    a.account_code,
+    a.account_name,
+    COALESCE(SUM(IF(je.date < ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_awal,
+    COALESCE(SUM(IF(je.date BETWEEN ? AND ?, jd.debit - jd.credit, 0)), 0) AS periode_berjalan,
+    COALESCE(SUM(IF(je.date <= ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_akhir
+FROM 
+    accounts a
+LEFT JOIN 
+    journal_details jd ON a.id = jd.account_id
+LEFT JOIN 
+    journal_entries je ON jd.journal_entry_id = je.id
+WHERE 
+    a.account_type_id IN (
+        SELECT id FROM account_types WHERE name IN ('Aktiva Lainnya')
+    )
+GROUP BY 
+    a.account_code, a.account_name
+ORDER BY 
+    a.account_code;
+    `, [startDate, startDate, endDate, endDate]);
+
+    const kewajiban = await db.query(`
+SELECT 
+    a.account_code,
+    a.account_name,
+    COALESCE(SUM(IF(je.date < ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_awal,
+    COALESCE(SUM(IF(je.date BETWEEN ? AND ?, jd.debit - jd.credit, 0)), 0) AS periode_berjalan,
+    COALESCE(SUM(IF(je.date <= ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_akhir
+FROM 
+    accounts a
+LEFT JOIN 
+    journal_details jd ON a.id = jd.account_id
+LEFT JOIN 
+    journal_entries je ON jd.journal_entry_id = je.id
+WHERE 
+    a.account_type_id IN (
+        SELECT id FROM account_types WHERE name IN ('Akun Hutang','Kewajiban Lancar Lainnya','Kewajiban Jangka Panjang')
+    )
+GROUP BY 
+    a.account_code, a.account_name
+ORDER BY 
+    a.account_code;
+    `, [startDate, startDate, endDate, endDate]);
+
+    const modal = await db.query(`
+SELECT 
+    a.account_code,
+    a.account_name,
+    COALESCE(SUM(IF(je.date < ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_awal,
+    COALESCE(SUM(IF(je.date BETWEEN ? AND ?, jd.debit - jd.credit, 0)), 0) AS periode_berjalan,
+    COALESCE(SUM(IF(je.date <= ?, jd.debit - jd.credit, 0)), 0) + a.initial_debit_balance - a.initial_credit_balance AS saldo_akhir
+FROM 
+    accounts a
+LEFT JOIN 
+    journal_details jd ON a.id = jd.account_id
+LEFT JOIN 
+    journal_entries je ON jd.journal_entry_id = je.id
+WHERE 
+    a.account_type_id IN (
+        SELECT id FROM account_types WHERE name IN ('Ekuitas')
+    )
+GROUP BY 
+    a.account_code, a.account_name
+ORDER BY 
+    a.account_code;
+    `, [startDate, startDate, endDate, endDate]);
+
+    const totalAsetLancar = asetLancar.reduce((acc, curr) => ({
+        saldo_awal: acc.saldo_awal + curr.saldo_awal,
+        periode_berjalan: acc.periode_berjalan + curr.periode_berjalan,
+        saldo_akhir: acc.saldo_akhir + curr.saldo_akhir,
+    }), { saldo_awal: 0, periode_berjalan: 0, saldo_akhir: 0 });
+
+    const totalAsetTetap = asetTetap.reduce((acc, curr) => ({
+        saldo_awal: acc.saldo_awal + curr.saldo_awal,
+        periode_berjalan: acc.periode_berjalan + curr.periode_berjalan,
+        saldo_akhir: acc.saldo_akhir + curr.saldo_akhir,
+    }), { saldo_awal: 0, periode_berjalan: 0, saldo_akhir: 0 });
+
+    const totalAsetLainnya = asetLainnya.reduce((acc, curr) => ({
+        saldo_awal: acc.saldo_awal + curr.saldo_awal,
+        periode_berjalan: acc.periode_berjalan + curr.periode_berjalan,
+        saldo_akhir: acc.saldo_akhir + curr.saldo_akhir,
+    }), { saldo_awal: 0, periode_berjalan: 0, saldo_akhir: 0 });
+
+    const totalKewajiban = kewajiban.reduce((acc, curr) => ({
+        saldo_awal: acc.saldo_awal + curr.saldo_awal,
+        periode_berjalan: acc.periode_berjalan + curr.periode_berjalan,
+        saldo_akhir: acc.saldo_akhir + curr.saldo_akhir,
+    }), { saldo_awal: 0, periode_berjalan: 0, saldo_akhir: 0 });
+
+    const totalModal = modal.reduce((acc, curr) => ({
+        saldo_awal: acc.saldo_awal + curr.saldo_awal,
+        periode_berjalan: acc.periode_berjalan + curr.periode_berjalan,
+        saldo_akhir: acc.saldo_akhir + curr.saldo_akhir,
+    }), { saldo_awal: 0, periode_berjalan: 0, saldo_akhir: 0 });
+
+    const total_aset = totalAsetLancar.saldo_akhir + totalAsetTetap.saldo_akhir + totalAsetLainnya.saldo_akhir;
+    const total_kewajiban_dan_modal = totalKewajiban.saldo_akhir + totalModal.saldo_akhir;
+    const isBalanced = total_aset === total_kewajiban_dan_modal;
+
+    return {
+        total_aset,
+        total_kewajiban_dan_modal,
+        isBalanced,
+        detail: {
+            asetLancar,
+            asetTetap,
+            asetLainnya,
+            kewajiban,
+            modal,
+        }
+    };
+};
+

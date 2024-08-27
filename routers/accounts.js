@@ -87,8 +87,8 @@ accounts.post('/', [
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { account_code, account_name, account_type_id, account_balance } = req.body
-    const data = { account_code, account_name, account_type_id, account_balance }
+    const { account_code, account_name, account_type_id, initial_debit_balance, initial_credit_balance } = req.body
+    const data = { account_code, account_name, account_type_id, initial_debit_balance, initial_credit_balance }
     res.send(await createAccount(data))
 })
 
