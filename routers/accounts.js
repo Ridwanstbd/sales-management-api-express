@@ -32,13 +32,13 @@ accounts.get('/', async (req, res) => {
 
 /**
  * @swagger
- * /accounts/{account_code}:
+ * /accounts/{id}:
  *   get:
  *     summary: Mendapatkan detail akun berdasarkan kode akun
  *     tags: [Accounts]
  *     parameters:
  *       - in: path
- *         name: account_code
+ *         name: id
  *         schema:
  *           type: string
  *         required: true
@@ -51,9 +51,9 @@ accounts.get('/', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Account'
  */
-accounts.get('/:account_code', async (req, res) => {
-    const { account_code } = req.params
-    res.send(await showAccount(account_code))
+accounts.get('/:id', async (req, res) => {
+    const { id } = req.params
+    res.send(await showAccount(id))
 })
 
 /**
@@ -94,13 +94,13 @@ accounts.post('/', [
 
 /**
  * @swagger
- * /accounts/{account_code}:
+ * /accounts/{id}:
  *   put:
  *     summary: Memperbarui akun berdasarkan kode akun
  *     tags: [Accounts]
  *     parameters:
  *       - in: path
- *         name: account_code
+ *         name: id
  *         schema:
  *           type: string
  *         required: true
@@ -119,22 +119,22 @@ accounts.post('/', [
  *             schema:
  *               $ref: '#/components/schemas/Account'
  */
-accounts.put('/:account_code', async (req, res) => {
+accounts.put('/:id', async (req, res) => {
     const { account_name, account_type_id, account_balance } = req.body
-    const { account_code } = req.params
+    const { id } = req.params
     const data = { account_name, account_type_id, account_balance }
-    res.send(await updateAccount(data, account_code))
+    res.send(await updateAccount(data, id))
 })
 
 /**
  * @swagger
- * /accounts/{account_code}:
+ * /accounts/{id}:
  *   delete:
  *     summary: Menghapus akun berdasarkan kode akun
  *     tags: [Accounts]
  *     parameters:
  *       - in: path
- *         name: account_code
+ *         name: id
  *         schema:
  *           type: string
  *         required: true
@@ -143,9 +143,9 @@ accounts.put('/:account_code', async (req, res) => {
  *       200:
  *         description: Akun berhasil dihapus
  */
-accounts.delete('/:account_code', async (req, res) => {
-    const { account_code } = req.params
-    res.send(await deleteAccount(account_code))
+accounts.delete('/:id', async (req, res) => {
+    const { id } = req.params
+    res.send(await deleteAccount(id))
 })
 
 /**

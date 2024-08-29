@@ -3,21 +3,21 @@ const db = require('../config/connection')
 exports.getAccounts = async () => {
     return await db.query("SELECT * FROM accounts")
 }
-exports.showAccount = async (account_code) => {
-    return await db.query("SELECT * FROM accounts WHERE account_code = ?", [account_code])
+exports.showAccount = async (id) => {
+    return await db.query("SELECT * FROM accounts WHERE id = ?", [id])
 }
 exports.createAccount = async (data) => {
     const query = await db.query('INSERT INTO accounts SET ?', [data])
     if (!query.affectedRows) return { message: "Terjadi Kesalahan saat membuat Akun!" }
     return { message: "Akun berhasil dibuat!" }
 }
-exports.updateAccount = async (data, account_code) => {
-    const query = await db.query('UPDATE accounts SET ? WHERE account_code = ?', [data, account_code])
+exports.updateAccount = async (data, id) => {
+    const query = await db.query('UPDATE accounts SET ? WHERE id = ?', [data, id])
     if (!query.affectedRows) return { message: "Terjadi Kesalahan saat memperbarui Akun!" }
     return { message: "Akun berhasil diperbarui!" }
 }
-exports.deleteAccount = async (account_code) => {
-    const query = await db.query('DELETE FROM accounts WHERE account_code = ?', [account_code])
+exports.deleteAccount = async (id) => {
+    const query = await db.query('DELETE FROM accounts WHERE id = ?', [id])
     if (!query.affectedRows) return { message: "Akun Gagal dihapus!" }
     return { message: "Akun berhasil dihapus!" }
 }
