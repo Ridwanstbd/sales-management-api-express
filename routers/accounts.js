@@ -12,10 +12,17 @@ const { getAccounts, createAccount, updateAccount, deleteAccount, showAccount, a
 
 /**
  * @swagger
- * /accounts:
+ * /v1/accounts/{business_id}:
  *   get:
- *     summary: Mendapatkan daftar semua akun
+ *     summary: Mendapatkan daftar semua akun berdasarkan ID bisnis
  *     tags: [Accounts]
+ *     parameters:
+ *       - in: path
+ *         name: business_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID unik dari bisnis
  *     responses:
  *       200:
  *         description: Daftar akun berhasil didapatkan
@@ -26,17 +33,38 @@ const { getAccounts, createAccount, updateAccount, deleteAccount, showAccount, a
  *               items:
  *                 $ref: '#/components/schemas/Account'
  */
-accounts.get('/', async (req, res) => {
-    res.send(await getAccounts())
+accounts.get('/:business_id', async (req, res) => {
+    const { business_id } = req.params
+    try {
+        const result = await getAccounts(business_id)
+        res.status(result.statusCode).json({
+            statusCode: result.statusCode,
+            message: result.message,
+            data: result.data,
+            error: result.error
+        });
+    } catch (error) {
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Terjadi kesalahan pada server!',
+            error: error.message
+        });
+    }
 })
 
 /**
  * @swagger
- * /accounts/{id}:
+ * /v1/accounts/{business_id}/{id}:
  *   get:
- *     summary: Mendapatkan detail akun berdasarkan kode akun
+ *     summary: Mendapatkan detail akun berdasarkan kode akun dan ID bisnis
  *     tags: [Accounts]
  *     parameters:
+ *       - in: path
+ *         name: business_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID unik dari bisnis
  *       - in: path
  *         name: id
  *         schema:
@@ -51,14 +79,28 @@ accounts.get('/', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Account'
  */
-accounts.get('/:id', async (req, res) => {
-    const { id } = req.params
-    res.send(await showAccount(id))
+accounts.get('/:business_id/:id', async (req, res) => {
+    const { business_id, id } = req.params
+    try {
+        const result = await showAccount(business_id, id)
+        res.status(result.statusCode).json({
+            statusCode: result.statusCode,
+            message: result.message,
+            data: result.data,
+            error: result.error
+        });
+    } catch (error) {
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Terjadi kesalahan pada server!',
+            error: error.message
+        });
+    }
 })
 
 /**
  * @swagger
- * /accounts:
+ * /v1/accounts:
  *   post:
  *     summary: Membuat akun baru
  *     tags: [Accounts]
@@ -81,24 +123,44 @@ accounts.post('/', [
     body('account_name').notEmpty().withMessage('Account name dibutuhkan!'),
     body('account_type_id').isInt().withMessage('Account type ID harus Ada!'),
     body('initial_debit_balance').isNumeric().withMessage('Account balance harus numerik'),
-    body('initial_credit_balance').isNumeric().withMessage('Account balance harus numerik')
+    body('initial_credit_balance').isNumeric().withMessage('Account balance harus numerik'),
+    body('business_id').isInt().withMessage('Business ID harus Ada!')
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { account_code, account_name, account_type_id, initial_debit_balance, initial_credit_balance } = req.body
-    const data = { account_code, account_name, account_type_id, initial_debit_balance, initial_credit_balance }
-    res.send(await createAccount(data))
+    const { account_code, account_name, account_type_id, initial_debit_balance, initial_credit_balance, business_id } = req.body
+    const data = { account_code, account_name, account_type_id, initial_debit_balance, initial_credit_balance, business_id }
+    try {
+        const result = await createAccount(data)
+        res.status(result.statusCode).json({
+            statusCode: result.statusCode,
+            message: result.message,
+            error: result.error
+        });
+    } catch (error) {
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Terjadi kesalahan pada server!',
+            error: error.message
+        });
+    }
 })
 
 /**
  * @swagger
- * /accounts/{id}:
+ * /v1/accounts/{business_id}/{id}:
  *   put:
- *     summary: Memperbarui akun berdasarkan kode akun
+ *     summary: Memperbarui akun berdasarkan kode akun dan ID bisnis
  *     tags: [Accounts]
  *     parameters:
+ *       - in: path
+ *         name: business_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID unik dari bisnis
  *       - in: path
  *         name: id
  *         schema:
@@ -119,20 +181,73 @@ accounts.post('/', [
  *             schema:
  *               $ref: '#/components/schemas/Account'
  */
-accounts.put('/:id', async (req, res) => {
-    const { account_name, account_type_id, account_balance } = req.body
-    const { id } = req.params
-    const data = { account_name, account_type_id, account_balance }
-    res.send(await updateAccount(data, id))
+accounts.put('/:business_id/:id', async (req, res) => {
+    const { account_name, account_type_id, initial_debit_balance, initial_credit_balance } = req.body
+    const { business_id, id } = req.params
+    const data = { account_name, account_type_id, initial_debit_balance, initial_credit_balance, business_id }
+    try {
+        const result = await updateAccount(data, business_id, id)
+        res.status(result.statusCode).json({
+            statusCode: result.statusCode,
+            message: result.message,
+            error: result.error
+        });
+    } catch (error) {
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Terjadi kesalahan pada server!',
+            error: error.message
+        });
+    }
 })
 
 /**
  * @swagger
- * /accounts/{id}:
- *   delete:
- *     summary: Menghapus akun berdasarkan kode akun
+ * /v1/accounts/{business_id}/{id}:
+ *   put:
+ *     summary: Memperbarui akun berdasarkan kode akun dan ID bisnis
  *     tags: [Accounts]
  *     parameters:
+ *       - in: path
+ *         name: business_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID unik dari bisnis
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Kode unik dari akun yang akan diperbarui
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Account'
+ *     responses:
+ *       200:
+ *         description: Akun berhasil diperbarui
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Account'
+ */
+
+/**
+ * @swagger
+ * /v1/accounts/{business_id}/{id}:
+ *   delete:
+ *     summary: Menghapus akun berdasarkan kode akun dan ID bisnis
+ *     tags: [Accounts]
+ *     parameters:
+ *       - in: path
+ *         name: business_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID unik dari bisnis
  *       - in: path
  *         name: id
  *         schema:
@@ -143,20 +258,41 @@ accounts.put('/:id', async (req, res) => {
  *       200:
  *         description: Akun berhasil dihapus
  */
-accounts.delete('/:id', async (req, res) => {
-    const { id } = req.params
-    res.send(await deleteAccount(id))
+accounts.delete('/:business_id/:id', async (req, res) => {
+    const { business_id, id } = req.params
+    try {
+        const result = await deleteAccount(business_id, id)
+        res.status(result.statusCode).json({
+            statusCode: result.statusCode,
+            message: result.message,
+            data: result.data,
+            error: result.error
+        });
+    } catch (error) {
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Terjadi kesalahan pada server!',
+            error: error.message
+        });
+    }
 })
+
 
 /**
  * @swagger
- * /accounts/movement/{id}:
+ * /v1/accounts/movement/{business_id}/{account_id}:
  *   get:
- *     summary: Mendapatkan pergerakan akun berdasarkan ID akun
+ *     summary: Mendapatkan pergerakan akun berdasarkan ID akun dan ID bisnis
  *     tags: [Accounts]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: business_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID unik dari bisnis
+ *       - in: path
+ *         name: account_id
  *         schema:
  *           type: string
  *         required: true
@@ -171,9 +307,24 @@ accounts.delete('/:id', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/AccountMovement'
  */
-accounts.get('/movement/:account_id', async (req, res) => {
-    const { account_id } = req.params
-    res.send(await accountMovement(account_id))
+accounts.get('/movement/:business_id/:account_id', async (req, res) => {
+    const { business_id, account_id } = req.params
+    try {
+        const result = await accountMovement(business_id, account_id);
+        res.status(result.statusCode).json({
+            statusCode: result.statusCode,
+            message: result.message,
+            data: result.data || null,
+            error: result.error
+        });
+    } catch (error) {
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Terjadi kesalahan pada server!',
+            error: error.message
+        });
+    }
+
 })
 
 module.exports = accounts

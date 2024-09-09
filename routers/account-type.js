@@ -12,7 +12,7 @@ const { getAccountTypes, createAccountType, showAccountType, updateAccountType, 
 
 /**
  * @swagger
- * /account-types:
+ * /v1/account-types:
  *   get:
  *     summary: Mendapatkan daftar semua tipe akun
  *     tags: [Account Type]
@@ -34,7 +34,7 @@ accountTypes.get('/', async (req, res) => {
 
 /**
  * @swagger
- * /account-types/{id}:
+ * /v1/account-types/{id}:
  *   get:
  *     summary: Mendapatkan detail tipe akun berdasarkan ID
  *     tags: [Account Type]
@@ -60,7 +60,7 @@ accountTypes.get('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /account-types:
+ * /v1/account-types:
  *   post:
  *     summary: Membuat tipe akun baru
  *     tags: [Account Type]
@@ -93,7 +93,7 @@ accountTypes.post('/', [
 
 /**
  * @swagger
- * /account-types/{id}:
+ * /v1/account-types/{id}:
  *   put:
  *     summary: Memperbarui tipe akun berdasarkan ID
  *     tags: [Account Type]
@@ -126,7 +126,7 @@ accountTypes.put('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /account-types/{id}:
+ * /v1/account-types/{id}:
  *   delete:
  *     summary: Menghapus tipe akun berdasarkan ID
  *     tags: [Account Type]

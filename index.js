@@ -16,10 +16,10 @@ swaggerConfig(app);
 app.get('/', (req, res) => {
     res.send('Hello hAHAHAHAHICI')
 })
-app.use('/accounts', accounts)
-app.use('/journals', journals)
-app.use('/account-types', accountTypes)
-app.use('/reports', reports)
+app.use('/api/v1/accounts', accounts)
+app.use('/api/v1/journals', journals)
+app.use('/api/v1/account-types', accountTypes)
+app.use('/api/v1/reports', reports)
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })

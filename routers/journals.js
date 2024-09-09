@@ -12,7 +12,7 @@ const { getJournals, showJournalById, createJournal, updateJournalEntries, updat
 
 /**
  * @swagger
- * /journals:
+ * /v1/journals:
  *   get:
  *     summary: Mendapatkan daftar semua jurnal
  *     tags: [Journals]
@@ -32,7 +32,7 @@ journals.get('/', async (req, res) => {
 
 /**
  * @swagger
- * /journals/{id}:
+ * /v1/journals/{id}:
  *   get:
  *     summary: Mendapatkan detail jurnal berdasarkan ID jurnal
  *     tags: [Journals]
@@ -58,7 +58,7 @@ journals.get('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /journals:
+ * /v1/journals:
  *   post:
  *     summary: Membuat jurnal baru
  *     tags: [Journals]
@@ -95,7 +95,7 @@ journals.post('/', [
 
 /**
  * @swagger
- * /journals/detail/{journalEntryId}:
+ * /v1/journals/detail/{journalEntryId}:
  *   post:
  *     summary: Menambahkan detail pada entri jurnal yang sudah ada
  *     tags: [Journals]
@@ -138,7 +138,7 @@ journals.post('/detail/:journalEntryId', [
 
 /**
  * @swagger
- * /journals/{journalId}:
+ * /v1/journals/{journalId}:
  *   put:
  *     summary: Memperbarui entri jurnal berdasarkan ID jurnal
  *     tags: [Journals]
@@ -172,7 +172,7 @@ journals.put('/:journalId', async (req, res) => {
 
 /**
  * @swagger
- * /journals/{journalEntryId}/{journalDetailId}:
+ * /v1/journals/{journalEntryId}/{journalDetailId}:
  *   put:
  *     summary: Memperbarui detail entri jurnal berdasarkan ID
  *     tags: [Journals]
@@ -212,7 +212,7 @@ journals.put('/:journalEntryId/:journalDetailId', async (req, res) => {
 
 /**
  * @swagger
- * /journals/{journalId}:
+ * /v1/journals/{journalId}:
  *   delete:
  *     summary: Menghapus entri jurnal berdasarkan ID jurnal
  *     tags: [Journals]
@@ -234,7 +234,7 @@ journals.delete('/:journalId', async (req, res) => {
 
 /**
  * @swagger
- * /journals/{journalId}/{journalDetailId}:
+ * /v1/journals/{journalId}/{journalDetailId}:
  *   delete:
  *     summary: Menghapus detail entri jurnal berdasarkan ID
  *     tags: [Journals]

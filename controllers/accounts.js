@@ -1,37 +1,125 @@
 const db = require('../config/connection')
 
-exports.getAccounts = async () => {
-    return await db.query("SELECT * FROM accounts")
+exports.getAccounts = async (business_id) => {
+    try {
+        const result = await db.query("SELECT * FROM accounts WHERE business_id = ?", [business_id])
+        if (!result || result.length === 0) {
+            return {
+                statusCode: 404,
+                message: "Daftar Akun tidak ditemukan!",
+                data: null
+            };
+        }
+        return {
+            statusCode: 200,
+            message: "Daftar Akun berhasil ditemukan!",
+            data: result
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: "Terjadi kesalahan saat menghapus akun!",
+            error: error.message
+        }
+    }
 }
-exports.showAccount = async (id) => {
-    return await db.query("SELECT * FROM accounts WHERE id = ?", [id])
+exports.showAccount = async (business_id, id) => {
+    try {
+        const result = await db.query("SELECT * FROM accounts WHERE business_id = ? AND id = ?", [business_id, id])
+        if (!result || result.length === 0) {
+            return {
+                statusCode: 404,
+                message: "Akun tidak ditemukan!",
+                data: null
+            };
+        }
+        return {
+            statusCode: 200,
+            message: "Akun Berhasil ditemukan!",
+            data: result
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: "Terjadi kesalahan saat menghapus akun!",
+            error: error.message
+        };
+    }
 }
 exports.createAccount = async (data) => {
     const query = await db.query('INSERT INTO accounts SET ?', [data])
-    if (!query.affectedRows) return { message: "Terjadi Kesalahan saat membuat Akun!" }
-    return { message: "Akun berhasil dibuat!" }
+    if (!query.affectedRows) return {
+        statusCode: 400,
+        message: "Terjadi Kesalahan saat membuat Akun!"
+    }
+    return {
+        statusCode: 201,
+        message: "Akun berhasil dibuat!"
+    }
 }
-exports.updateAccount = async (data, id) => {
-    const query = await db.query('UPDATE accounts SET ? WHERE id = ?', [data, id])
-    if (!query.affectedRows) return { message: "Terjadi Kesalahan saat memperbarui Akun!" }
-    return { message: "Akun berhasil diperbarui!" }
+exports.updateAccount = async (data, business_id, id) => {
+    const query = await db.query('UPDATE accounts SET ? WHERE business_id = ? AND id = ?', [data, business_id, id])
+    if (!query.affectedRows) return {
+        statusCode: 500,
+        message: "Terjadi Kesalahan saat memperbarui Akun!"
+    }
+    return {
+        statusCode: 200,
+        message: "Akun berhasil diperbarui!"
+    }
 }
-exports.deleteAccount = async (id) => {
-    const query = await db.query('DELETE FROM accounts WHERE id = ?', [id])
-    if (!query.affectedRows) return { message: "Akun Gagal dihapus!" }
-    return { message: "Akun berhasil dihapus!" }
+exports.deleteAccount = async (business_id, id) => {
+    try {
+        const query = await db.query('DELETE FROM accounts WHERE business_id = ? AND id = ?', [business_id, id])
+        if (!query.affectedRows) return {
+            statusCode: 404,
+            message: "Akun tidak ditemukan!"
+        }
+
+        return {
+            statusCode: 200,
+            message: "Akun berhasil dihapus!"
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: "Terjadi kesalahan saat menghapus akun!",
+            error: error.message
+        };
+    }
 }
 
-exports.accountMovement = async (accountId) => {
+exports.accountMovement = async (businessId, accountId) => {
     try {
         const [accountResult] = await db.query(`
-            SELECT a.*, ay.normal_balance FROM accounts a JOIN account_types ay ON a.account_type_id = ay.id WHERE a.id = ?
-        `, [accountId])
+            SELECT a.*, ay.normal_balance FROM accounts a JOIN account_types ay ON a.account_type_id = ay.id WHERE a.business_id = ? AND a.id = ?
+        `, [businessId, accountId])
+
+        if (accountResult.length === 0) {
+            return {
+                statusCode: 404,
+                message: 'Akun tidak ditemukan untuk bisnis yang diberikan!',
+                data: null
+            };
+        }
+
         const account = accountResult
 
         const queryResults = await db.query(`
-            SELECT je.id, je.date, je.description, jd.id AS journal_detail_id, jd.account_id, jd.debit, jd.credit FROM journal_entries je INNER JOIN journal_details jd ON je.id = jd.journal_entry_id WHERE jd.account_id = ?
-        `, [accountId]);
+            SELECT je.id, je.date, je.description, jd.id AS journal_detail_id, jd.account_id, jd.debit, jd.credit 
+            FROM journal_entries je 
+            INNER JOIN journal_details jd ON je.id = jd.journal_entry_id 
+            WHERE jd.account_id = ? AND je.business_id = ?
+            ORDER BY jd.id ASC
+        `, [accountId, businessId]);
+
+        if (queryResults.length === 0) {
+            return {
+                statusCode: 404,
+                message: 'Tidak ada pergerakan jurnal untuk akun ini!',
+                data: null
+            };
+        }
 
         const details = await Promise.all(queryResults.map(async (detail) => {
             const balance = await calculateBalance(detail.account_id, detail.journal_detail_id, account.normal_balance);
@@ -47,8 +135,8 @@ exports.accountMovement = async (accountId) => {
             };
         }));
 
-
         const accountMovement = {
+            business_id: account.business_id,
             id: account.id,
             code: account.account_code,
             name: account.account_name,
@@ -59,9 +147,18 @@ exports.accountMovement = async (accountId) => {
             details: details
         };
 
-        return accountMovement
+        return {
+            statusCode: 200,
+            message: 'Data pergerakan akun berhasil diambil.',
+            data: accountMovement
+        };
+
     } catch (error) {
-        return { message: 'Terjadi kesalahan saat mengambil data pergerakan akun!', error };
+        return {
+            statusCode: 500,
+            message: 'Terjadi kesalahan saat mengambil data pergerakan akun!',
+            error: error.message
+        };
     }
 };
 
